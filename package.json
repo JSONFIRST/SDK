@@ -1,0 +1,36 @@
+{
+  "name": "@jsonfirst/sdk",
+  "version": "1.0.0",
+  "description": "Official JavaScript/Node.js SDK for the JSONFIRST Protocol — Universal Intent Protocol for AI governance",
+  "main": "index.js",
+  "files": [
+    "index.js",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "node -e \"const sdk = require('.'); const jf = new sdk({apiKey:'test'}); console.log('SDK loaded OK'); const v = jf.validate({spec:'JSONFIRST',version:'2.0',jdons:[],execution:{}}); console.log('validate:', v);\""
+  },
+  "keywords": [
+    "jsonfirst",
+    "json",
+    "ai",
+    "governance",
+    "llm",
+    "intent",
+    "protocol",
+    "sdk",
+    "chatgpt",
+    "claude",
+    "gemini"
+  ],
+  "author": "JSONFIRST <contact@jsonfirst.io>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jsonfirst/sdk"
+  },
+  "homepage": "https://jsonfirst.io",
+  "engines": {
+    "node": ">=14"
+  }
+}

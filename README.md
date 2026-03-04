@@ -39,14 +39,14 @@ console.log(valid, errors);
 ```javascript
 const client = new JsonFirst({
   apiKey: 'YOUR_API_KEY',
-  baseUrl: 'https://jsonfirst.io' // optional override
+  baseUrl: 'https://jsonfirst.com' // optional override
 });
 ```
 
 ## Links
 
-- [Documentation](https://jsonfirst.io/developers)
-- [Templates](https://jsonfirst.io/templates)
+- [Documentation](https://jsonfirst.com/developers)
+- [Templates](https://jsonfirst.com/templates)
 - [GitHub](https://github.com/jsonfirst/sdk)
 
 ## License

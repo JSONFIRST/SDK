@@ -19,7 +19,7 @@
   }
 }(typeof globalThis !== 'undefined' ? globalThis : this, function() {
 
-  const DEFAULT_BASE_URL = 'https://jsonfirst.io';
+  const DEFAULT_BASE_URL = 'https://jsonfirst.com';
 
   class JsonFirstError extends Error {
     constructor(message, status, body) {
@@ -34,7 +34,7 @@
     /**
      * @param {Object} options
      * @param {string} options.apiKey - Your JSONFIRST API key
-     * @param {string} [options.baseUrl] - Override base URL (default: https://jsonfirst.io)
+     * @param {string} [options.baseUrl] - Override base URL (default: https://jsonfirst.com)
      */
     constructor(options = {}) {
       if (!options.apiKey) throw new Error('JsonFirst: apiKey is required');

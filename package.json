@@ -23,13 +23,13 @@
     "claude",
     "gemini"
   ],
-  "author": "JSONFIRST <contact@jsonfirst.io>",
+  "author": "JSONFIRST <contact@jsonfirst.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/jsonfirst/sdk"
   },
-  "homepage": "https://jsonfirst.io",
+  "homepage": "https://jsonfirst.com",
   "engines": {
     "node": ">=14"
   }

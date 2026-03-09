@@ -1,5 +1,5 @@
 /**
- * @jsonfirst/sdk v1.0.0
+ * @jsonfirst/sdk v1.2.0
  * Official JavaScript/Node.js SDK for the JSONFIRST Protocol
  *
  * Usage:
@@ -20,6 +20,36 @@
 }(typeof globalThis !== 'undefined' ? globalThis : this, function() {
 
   const DEFAULT_BASE_URL = 'https://jsonfirst.com';
+
+  // All 22 governance modes
+  const MODES = {
+    // Base modes (all plans)
+    ANTI_CREDIT_WASTE_V2:        { plan: 'free+',     category: 'efficiency',  description: 'Anti-token-waste enforcement. Minimal, direct, single-pass.' },
+    EXPRESS_ROUTE:               { plan: 'explorer+', category: 'speed',       description: 'Ultra-low latency routing. Fastest path to response.' },
+    STRICT_PROTOCOL:             { plan: 'explorer+', category: 'compliance',  description: 'Enforces strict JSONFIRST spec compliance on all outputs.' },
+    PERFORMANCE_MAX:             { plan: 'explorer+', category: 'performance', description: 'Maximum throughput. Optimized for high-volume workloads.' },
+    GUARDIAN_MODE:               { plan: 'explorer+', category: 'safety',      description: 'Safety lock. Blocks risky actions until explicit confirmation.' },
+    FINANCE_ALGO:                { plan: 'explorer+', category: 'finance',     description: 'Financial computation mode. Precision over speed.' },
+    ETHICAL_LOCK:                { plan: 'explorer+', category: 'ethics',      description: 'Ethics enforcement. Refuses harmful or biased outputs.' },
+    SCOPE_LIMITER:               { plan: 'pro+',      category: 'governance',  description: 'Restricts agent scope to explicitly defined boundaries.' },
+    SAFE_DEPLOY:                 { plan: 'pro+',      category: 'deployment',  description: 'Deployment gating. Requires validation before any deploy.' },
+    STANDARD_DEPLOY:             { plan: 'pro+',      category: 'deployment',  description: 'Standard deployment flow with audit trail.' },
+    FAST_BUILD:                  { plan: 'pro+',      category: 'build',       description: 'Accelerated build mode. Speed-first, reduced validation.' },
+    PRODUCTION_LOCK:             { plan: 'pro+',      category: 'deployment',  description: 'Production environment lock. No destructive actions.' },
+    // Domain Lock modes (business/enterprise)
+    MEDICAL_EXPERT:              { plan: 'business+', category: 'domain_lock', description: 'Domain-locked to medicine. Refuses off-domain queries.' },
+    LEGAL_EXPERT:                { plan: 'business+', category: 'domain_lock', description: 'Domain-locked to law and legal compliance.' },
+    FINANCE_EXPERT:              { plan: 'business+', category: 'domain_lock', description: 'Domain-locked to financial analysis and accounting.' },
+    CYBERSECURITY_EXPERT:        { plan: 'business+', category: 'domain_lock', description: 'Domain-locked to cybersecurity and threat analysis.' },
+    SOFTWARE_ENGINEERING_EXPERT: { plan: 'business+', category: 'domain_lock', description: 'Domain-locked to software engineering and architecture.' },
+    AI_RESEARCH_EXPERT:          { plan: 'business+', category: 'domain_lock', description: 'Domain-locked to AI/ML research and model analysis.' },
+    NEWS_ANALYSIS_EXPERT:        { plan: 'business+', category: 'domain_lock', description: 'Domain-locked to news analysis and geopolitics.' },
+    SCIENTIFIC_RESEARCH_EXPERT:  { plan: 'business+', category: 'domain_lock', description: 'Domain-locked to scientific research and methodology.' },
+    BUSINESS_STRATEGY_EXPERT:    { plan: 'business+', category: 'domain_lock', description: 'Domain-locked to business strategy and market analysis.' },
+    DATA_SCIENCE_EXPERT:         { plan: 'business+', category: 'domain_lock', description: 'Domain-locked to data science and analytics.' },
+  };
+
+  const MODE_IDS = Object.keys(MODES);
 
   class JsonFirstError extends Error {
     constructor(message, status, body) {
@@ -85,20 +115,73 @@
     }
 
     /**
-     * Validate a JSON object against the JSONFIRST spec.
-     * @param {Object} json - The JSON to validate
-     * @returns {{ valid: boolean, errors: string[] }}
+     * Validate a JSONFIRST output JSON against the JSONFIRST v2 spec.
+     * @param {Object} json - The JSONFIRST JSON to validate
+     * @returns {{ valid: boolean, errors: string[], warnings: string[] }}
      */
     validate(json) {
       const errors = [];
+      const warnings = [];
       if (!json || typeof json !== 'object') {
-        return { valid: false, errors: ['Input must be a JSON object'] };
+        return { valid: false, errors: ['Input must be a JSON object'], warnings: [] };
       }
       if (json.spec !== 'JSONFIRST') errors.push('Missing or incorrect "spec" field (expected "JSONFIRST")');
       if (!json.version) errors.push('Missing "version" field');
-      if (!json.jdons || !Array.isArray(json.jdons)) errors.push('Missing "jdons" array');
+      if (!json.jdons || !Array.isArray(json.jdons)) {
+        errors.push('Missing "jdons" array');
+      } else if (json.jdons.length === 0) {
+        warnings.push('"jdons" array is empty — no intents parsed');
+      }
       if (!json.execution || typeof json.execution !== 'object') errors.push('Missing "execution" object');
-      return { valid: errors.length === 0, errors };
+      return { valid: errors.length === 0, errors, warnings };
+    }
+
+    /**
+     * Validate a single JDON intent for completeness and executability.
+     * Checks required params, confidence threshold, and executable flag.
+     * @param {Object} intent - A single JDON object from jdons[]
+     * @param {Object} [options]
+     * @param {number} [options.minConfidence=0.5] - Minimum confidence threshold (0-1)
+     * @param {string[]} [options.requiredParams=[]] - List of required param keys in intent.object
+     * @returns {{ valid: boolean, executable: boolean, missing_params: string[], errors: string[], confidence: number }}
+     */
+    validateIntent(intent, options = {}) {
+      const { minConfidence = 0.5, requiredParams = [] } = options;
+      const errors = [];
+      const missing_params = [];
+
+      if (!intent || typeof intent !== 'object') {
+        return { valid: false, executable: false, missing_params: [], errors: ['Intent must be a JSON object'], confidence: 0 };
+      }
+
+      // Action check
+      if (!intent.action || !intent.action.normalized) errors.push('Missing action.normalized');
+
+      // Confidence check
+      const confidence = intent.confidence || 0;
+      if (confidence < minConfidence) {
+        errors.push(`Confidence ${(confidence * 100).toFixed(0)}% is below minimum ${(minConfidence * 100).toFixed(0)}%`);
+      }
+
+      // Required params check
+      const obj = intent.object || {};
+      for (const param of requiredParams) {
+        if (obj[param] === undefined || obj[param] === null) {
+          missing_params.push(param);
+          errors.push(`Missing required param: ${param}`);
+        }
+      }
+
+      // Missing params from JSONFIRST spec
+      if (intent.missing_params && intent.missing_params.length > 0) {
+        for (const p of intent.missing_params) {
+          if (!missing_params.includes(p)) missing_params.push(p);
+        }
+      }
+
+      const executable = intent.executable === true && missing_params.length === 0 && errors.length === 0;
+
+      return { valid: errors.length === 0, executable, missing_params, errors, confidence };
     }
 
     /**
@@ -118,7 +201,26 @@
     async usage() {
       return this._request('GET', '/auth/me');
     }
+
+    /**
+     * List all 22 governance modes with their metadata.
+     * @returns {Object} modes map
+     */
+    modes() {
+      return MODES;
+    }
+
+    /**
+     * List all mode IDs.
+     * @returns {string[]}
+     */
+    modeIds() {
+      return MODE_IDS.slice();
+    }
   }
+
+  JsonFirst.MODES   = MODES;
+  JsonFirst.MODE_IDS = MODE_IDS;
 
   return JsonFirst;
 }));

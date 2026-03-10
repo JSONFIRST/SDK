@@ -154,6 +154,15 @@ console.log(JsonFirst.MODE_IDS); // all 22 mode IDs
 
 ---
 
+## Works with
+
+- **LangChain** — use JSONFIRST to parse user inputs before passing structured intents to your chains
+- **LlamaIndex** — feed validated JDON objects as structured queries to your indexes and agents
+- **CrewAI** — turn natural language tasks into executable JDONs your crew agents can act on reliably
+- **Any LLM** — framework-agnostic, works with OpenAI, Anthropic, Gemini, Mistral, and any model
+
+---
+
 ## Links
 
 - [Get your API key](https://jsonfirst.com/developers)

@@ -7,6 +7,8 @@ JSONFIRST turns any user input into a structured, validated JSON intent your age
 npm install @jsonfirst/sdk
 ```
 
+⭐ If this saves you time, star the repo: github.com/jsonfirst/sdk
+
 ---
 
 ## The problem it solves
